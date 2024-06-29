@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>TASK MASTER</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1>Task Master</h1>
+    <table>
+        <tr>
+            <th>Task</th>
+            <th>Date added</th>
+            <th>Actions</th>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td>
+                <a href="">DELETE</a>
+                <br>
+                <a href="">UPDATE</a>
+            </td>
+        </tr>
+    </table>
+    <form action="/" method="POST">
+        <input type="text" name="content" id="content">
+        <input type="submit" value="Add Task">
+    </form>
+</div>
+{% endblock %}
