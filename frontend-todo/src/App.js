@@ -1,10 +1,24 @@
 import './App.css';
 import React, { useEffect, useState } from 'react';
-import { Box, Button, TextField } from '@mui/material';
+import { 
+  Box, 
+  Button, 
+  TextField, 
+  ListItem, 
+  ListItemButton, 
+  List, 
+  ListItemText,
+  ListItemIcon,
+  IconButton
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { blue } from '@mui/material/colors';
+
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
+  const [secondary, setSecondary] = React.useState(false);
 
   useEffect(() => {
     fetch('/api/todos')
@@ -22,7 +36,10 @@ function App() {
       body: JSON.stringify({ content: newTask })
     })
     .then(response => response.json())
-    .then(task => setTasks([...tasks, task]))
+    .then(task => {
+      setTasks([...tasks, task])
+      setNewTask('');
+    })
     .catch(err => console.error('Error:', err));
   };
   
@@ -71,29 +88,62 @@ function App() {
             label="Add new task" 
             variant='outlined' 
             size="small"
+            value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: '#20C20E', // Default border color
+                },
+                '&:hover fieldset': {
+                  borderColor: '#20C20E', // Border color on hover
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#20C20E', // Border color when focused
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: '#20C20E', // Default label color
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#20C20Es', // Label color when focused
+              },
+              input: { color: '#20C20E' }
+            }}
           />
-          <Button onClick={addTask}>ADD</Button>
+          <Button onClick={addTask} sx={{ color: "#20C20E" }}>ADD</Button>
         </Box>
         <Box className="main-list">
-          <h2>TASKS:</h2>
-
-          
-          <ul className="task-list">
+          <h2>TASKS</h2>
+          <List>
             {tasks.map((task) => (
-              <li key={task.id} className="task-item">
-                <input
-                  type="text"
-                  value={task.content}
-                  onChange={(e) => updateTask(task.id, e.target.value)}
-                  className="task-content"
-                  />
-                <button onClick={() => deleteTask(task.id)} className="task-delete-button">DEL</button>
-              </li>
+              <ListItem 
+                disablePadding
+                secondaryAction={
+                  <IconButton 
+                    edge="end" 
+                    aria-label="delete"
+                    onClick={() => deleteTask(task.id)}  
+                  >
+                    <DeleteIcon sx={{ color: "#20C20E"}}/>
+                  </IconButton>
+                  // <IconButton>
+                  // move the update to its own seperate page
+                  // <Button onClick={() => updateTask(task.id, task.content)} id="task-update-button">UPDATE</Button>
+                  // </IconButton>
+                }
+              >
+                {/* <ListItemText
+                  primary="Single-line item"
+                  // secondary={secondary ? 'Secondary text' : null}
+                /> */}
+                <ListItemButton>
+                  <ListItemText primary={task.content} />
+                </ListItemButton>
+              </ListItem>
             ))}
-          </ul>
+          </List>
         </Box>
-
       </Box>
     </>
   );

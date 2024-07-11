@@ -1,0 +1,11 @@
+body {
+  margin: 0;
+  background-color: black;
+  /* background-color: grey; */
+  color: #20C20E;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.main {
+  padding: 25%;
+}
