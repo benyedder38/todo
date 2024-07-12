@@ -8,17 +8,18 @@ import {
   ListItemButton, 
   List, 
   ListItemText,
-  ListItemIcon,
   IconButton
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { blue } from '@mui/material/colors';
-
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
-  const [secondary, setSecondary] = React.useState(false);
+  const [editTaskId, setEditTaskId] = useState(null);
+  const [editTaskContent, setEditTaskContent] = useState('');
 
   useEffect(() => {
     fetch('/api/todos')
@@ -26,9 +27,6 @@ function App() {
       .then((data) => setTasks(data));
   }, []);
 
-  /**
-   * Add task to-do list
-   */
   const addTask = () => {
     fetch('/api/todos', {
       method: 'POST',
@@ -43,32 +41,35 @@ function App() {
     .catch(err => console.error('Error:', err));
   };
   
-  /**
-   * Delete task from to-do list
-   * @param {*} id 
-   */
   const deleteTask = (id) => {
     fetch(`/api/todos/${id}`, { method: 'DELETE' })
       .then(() => setTasks(tasks.filter(task => task.id !== id)))
       .catch(err => console.error('Error:', err));
   };
 
-  /**
-   * Update task from to-do list
-   * @param {*} id 
-   * @param {*} content 
-   */
-  const updateTask = (id, content) => {
+  const startEditingTask = (id, content) => {
+    setEditTaskId(id);
+    setEditTaskContent(content);
+  };
+
+  const saveTask = (id) => {
     fetch(`/api/todos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content: editTaskContent })
     })
       .then(response => response.json())
       .then(updatedTask => {
         setTasks(tasks.map(task => (task.id === id ? updatedTask : task)));
+        setEditTaskId(null);
+        setEditTaskContent('');
       })
       .catch(err => console.error('Error:', err));
+  };
+
+  const cancelEditing = () => {
+    setEditTaskId(null);
+    setEditTaskContent('');
   };
 
   return (
@@ -81,7 +82,6 @@ function App() {
           component="form"
           className="main-input"
           noValidate
-          
         >
           <TextField 
             id="outlined-basic" 
@@ -106,7 +106,7 @@ function App() {
                 color: '#20C20E', // Default label color
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: '#20C20Es', // Label color when focused
+                color: '#20C20E', // Label color when focused
               },
               input: { color: '#20C20E' }
             }}
@@ -119,27 +119,77 @@ function App() {
             {tasks.map((task) => (
               <ListItem 
                 disablePadding
+                key={task.id}
                 secondaryAction={
-                  <IconButton 
-                    edge="end" 
-                    aria-label="delete"
-                    onClick={() => deleteTask(task.id)}  
-                  >
-                    <DeleteIcon sx={{ color: "#20C20E"}}/>
-                  </IconButton>
-                  // <IconButton>
-                  // move the update to its own seperate page
-                  // <Button onClick={() => updateTask(task.id, task.content)} id="task-update-button">UPDATE</Button>
-                  // </IconButton>
+                  <>
+                    {editTaskId === task.id ? (
+                      <>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="save"
+                          onClick={() => saveTask(task.id)}
+                        >
+                          <SaveIcon sx={{ color: "#20C20E"}}/>
+                        </IconButton>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="cancel"
+                          onClick={cancelEditing}
+                        >
+                          <CancelIcon sx={{ color: "#20C20E"}}/>
+                        </IconButton>
+                      </>
+                    ) : (
+                      <>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="edit"
+                          onClick={() => startEditingTask(task.id, task.content)}
+                        >
+                          <EditIcon sx={{ color: "#20C20E"}}/>
+                        </IconButton>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="delete"
+                          onClick={() => deleteTask(task.id)}  
+                        >
+                          <DeleteIcon sx={{ color: "#20C20E"}}/>
+                        </IconButton>
+                      </>
+                    )}
+                  </>
                 }
               >
-                {/* <ListItemText
-                  primary="Single-line item"
-                  // secondary={secondary ? 'Secondary text' : null}
-                /> */}
-                <ListItemButton>
-                  <ListItemText primary={task.content} />
-                </ListItemButton>
+                {editTaskId === task.id ? (
+                  <TextField
+                    value={editTaskContent}
+                    onChange={(e) => setEditTaskContent(e.target.value)}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
+                          borderColor: '#20C20E', // Default border color
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#20C20E', // Border color on hover
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#20C20E', // Border color when focused
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: '#20C20E', // Default label color
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#20C20E', // Label color when focused
+                      },
+                      input: { color: '#20C20E' }
+                    }}
+                  />
+                ) : (
+                  <ListItemButton>
+                    <ListItemText primary={task.content} />
+                  </ListItemButton>
+                )}
               </ListItem>
             ))}
           </List>
